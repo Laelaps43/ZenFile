@@ -143,7 +143,7 @@
     </appender>
 
     <!-- 控制台输出日志级别 -->
-    <root level="info">
+    <root level="debug">
         <appender-ref ref="console"/>
         <appender-ref ref="info_file"/>
         <appender-ref ref="warn_file"/>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zenfile.mapper.FileMapper">
+
+    <resultMap id="fileResultStorage" type="org.zenfile.model.file.entity.FileItem">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="path" column="path"/>
+        <result property="type" column="type"/>
+        <result property="size" column="size"/>
+        <result property="createTime" column="create_time"/>
+        <result property="storageId" column="storage_id"/>
+    </resultMap>
+
+    <select id="getFileItemStorage" resultMap="fileResultStorage">
+        SELECT * FROM `file` f RIGHT JOIN
+        `file_storage_source` s
+        on f.`id` = s.`file_id`
+        WHERE s.`storage_id` = #{id} and f.`path`= #{path} and f.`name` = #{name}
+    </select>
+</mapper>
