@@ -23,5 +23,10 @@ public class StorageSourceServiceTest {
     }
 
 
+    @Test
+    public void getStorageIdByKeyTest(){
+        Long key123 = storageSourceService.getStorageIdByKey("Test123");
+        log.debug("{} key12345获取到的Id是{}", TestConstant.TEST_DEBUG, key123);
+    }
 
 }

@@ -8,15 +8,18 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.zenfile.convert.FileConvert;
+import org.zenfile.exception.storageSource.DuplicateDriverException;
 import org.zenfile.exception.storageSource.InitializeStorageSourceException;
 import org.zenfile.model.file.dto.FileItemResult;
 import org.zenfile.model.file.entity.FileItem;
 import org.zenfile.model.file.enums.FileTypeEnum;
 import org.zenfile.model.storage.enums.StorageTypeEnum;
 import org.zenfile.model.storage.param.LocalParam;
+import org.zenfile.model.utils.FileStoreInfo;
 import org.zenfile.service.file.FileService;
 import org.zenfile.service.storage.base.AbstractProxyTransferService;
 import org.zenfile.utils.CodeMsg;
+import org.zenfile.utils.MachineInfoUtils;
 import org.zenfile.utils.StringUtils;
 
 import java.io.File;
@@ -101,6 +104,23 @@ public class BaseLocalServiceImpl extends AbstractProxyTransferService<LocalPara
     @Override
     public boolean renameFolder(String path, String name) {
         return false;
+    }
+
+    /**
+     * 获取本地分区的总空间以及使用空间
+     * @return 返回一个列表 第一个为总大小，第二个为使用大小
+     */
+    @Override
+    public List<Long> getSourceStorageInfo() {
+        List<FileStoreInfo> machineStorageInfo = MachineInfoUtils.getMachineStorageInfo();
+        List<FileStoreInfo> filterList = machineStorageInfo.parallelStream().filter(fileStoreInfo -> fileStoreInfo.getName().equals(getParam().getDriver())).toList();
+        if(filterList.size() > 1){
+            throw new DuplicateDriverException(CodeMsg.DUPLICATE_DRIVER, getStorageId());
+        }
+        ArrayList<Long> info = new ArrayList<>();
+        info.add(filterList.get(0).getTotalSpace());
+        info.add(filterList.get(0).getTotalSpace() - filterList.get(0).getFreeSpace());
+        return info;
     }
 
     @Override

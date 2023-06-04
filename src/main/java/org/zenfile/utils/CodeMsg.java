@@ -32,4 +32,8 @@ public class CodeMsg {
 
     public static CodeMsg INITIALIZE_STORAGE_SOURCE = new CodeMsg("50000", "存储源初始化异常");
     public static CodeMsg NOTFOUND_STORAGE_SOURCE = new CodeMsg("50001", "未找到存储元");
+
+    public static CodeMsg DUPLICATE_DRIVER = new CodeMsg("50002", "本地存储存在多个一样的分区名字，请联系管理员");
+
+    public static CodeMsg KEY_INVALID = new CodeMsg("50003", "非法的Key, 请检查。");
 }

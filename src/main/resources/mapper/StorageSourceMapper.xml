@@ -20,4 +20,9 @@
         select *
         from `storage_source`
     </select>
+
+    <select id="getStorageSourceByKey" resultMap="storageSource">
+        select *
+        from `storage_source` where `key` = #{key};
+    </select>
 </mapper>

@@ -13,4 +13,6 @@ public interface StorageSourceMapper {
     StorageSource getStorageSourceById(@Param("id") Long storageId);
 
     List<StorageSource> getAllStorageSource();
+
+    StorageSource getStorageSourceByKey(@Param("key") String key);
 }

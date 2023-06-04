@@ -113,7 +113,8 @@ public abstract class AbstractBaseFileService<P extends StorageParam> implements
         return this.isInitialized;
     }
 
-
-
-
+    /**
+     * 获取存储源的存储信息，主要为以使用大小，以及存储源大小
+     */
+    public abstract List<Long> getSourceStorageInfo();
 }

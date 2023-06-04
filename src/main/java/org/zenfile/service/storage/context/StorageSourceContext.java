@@ -168,6 +168,7 @@ public class StorageSourceContext implements ApplicationContextAware {
 
     /**
      * 根据指定的存储源类型返回一个初始化状态的 Service，获取bean的方法是SpringUtil.getBean()
+     * @return 存储源对应为初始化的 Service
      */
     public AbstractBaseFileService<StorageParam> getInitStorageSourceBeanByStorageId(Long storageId){
         log.debug("开始获取值指定Id的存储源类型");
@@ -184,4 +185,28 @@ public class StorageSourceContext implements ApplicationContextAware {
         return null;
     }
 
+    /**
+     * 根据给定的存储元Key返回指定的初始化完成的Service
+     * @param key 存储元key
+     */
+    public AbstractBaseFileService<StorageParam> getStorageSourceServiceByStorageKey(String key){
+        Long storageId = storageSourceService.getStorageIdByKey(key);
+        if(storageId == null){
+            return null;
+        }
+        return getStorageSourceServiceByStorageId(storageId);
+    }
+
+    /**
+     * 根据存储源Id返回对应的存储元Service
+     * @param storageId 存储源Id
+     * @return 存储源 Service
+     */
+    public AbstractBaseFileService<StorageParam> getStorageSourceServiceByStorageId(Long storageId){
+        AbstractBaseFileService<StorageParam> fileService = SERVICE_MAP.get(storageId);
+        if(fileService == null){
+            throw new InvalidStorageSourceException(storageId);
+        }
+        return fileService;
+    }
 }

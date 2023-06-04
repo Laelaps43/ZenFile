@@ -5,9 +5,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.zenfile.exception.storageSource.InitializeStorageSourceException;
-import org.zenfile.exception.storageSource.InvalidStorageSourceException;
-import org.zenfile.exception.storageSource.StorageSourceException;
+import org.zenfile.exception.storageSource.*;
 import org.zenfile.model.ResultJson;
 
 import java.io.FileNotFoundException;
@@ -46,6 +44,26 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResultJson<String> invalidStorageSourceException(InvalidStorageSourceException exception){
         log.error("存储源{}，{}", exception.getStorageId(), exception.getMessage());
+        return ResultJson.getError(exception.getCodeMsgMessage());
+    }
+
+    /**
+     * 多个重复分区
+     */
+    @ExceptionHandler(DuplicateDriverException.class)
+    @ResponseStatus
+    @ResponseBody
+    public ResultJson<String> duplicateDriverException(DuplicateDriverException exception){
+        log.error("系统存在多个重复的分区，请检查! 存储源{}的位置不唯一。", exception.getStorageId());
+        return ResultJson.getError(exception.getCodeMsgMessage());
+    }
+
+    /**
+     * 非法的Key异常处理
+     */
+    @ExceptionHandler(InvalidStorageSourceKeyException.class)
+    public ResultJson<String> invalidStorageSourceKey(InvalidStorageSourceKeyException exception){
+        log.error("存储源Key异常：{}", exception.getMessage());
         return ResultJson.getError(exception.getCodeMsgMessage());
     }
 }
