@@ -36,4 +36,12 @@ public class CodeMsg {
     public static CodeMsg DUPLICATE_DRIVER = new CodeMsg("50002", "本地存储存在多个一样的分区名字，请联系管理员");
 
     public static CodeMsg KEY_INVALID = new CodeMsg("50003", "非法的Key, 请检查。");
+
+    public static CodeMsg KEY_UPDATE_CONFLICT = new CodeMsg("50004", "Key，与所执行的动作冲突，请检查。");
+
+
+    /**
+     * 其他错误
+     */
+    public static CodeMsg UNKNOWN_OPERATION = new CodeMsg("90000", "未知异常操作");
 }

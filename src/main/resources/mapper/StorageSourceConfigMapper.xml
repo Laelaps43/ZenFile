@@ -16,4 +16,17 @@
         from `storage_source_config`
         where `storage_id` = #{storageId};
     </select>
+    <delete id="deleteByStorageId" parameterType="java.lang.Long">
+        delete
+        from `storage_source_config`
+        where `storage_id` = #{storageId};
+    </delete>
+
+    <insert id="batchSaveConfig">
+        insert into `storage_source_config` (`storage_id`,`title`, `value`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{storageId}, #{item.title}, #{item.value})
+        </foreach> ;
+    </insert>
 </mapper>

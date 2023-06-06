@@ -1,7 +1,9 @@
 package org.zenfile.service.storage.base;
 
+import cn.hutool.core.util.ReflectUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ResolvableType;
 import org.zenfile.exception.storageSource.InitializeStorageSourceException;
 import org.zenfile.model.file.dto.FileItemResult;
 import org.zenfile.model.file.entity.FileItem;
@@ -9,12 +11,22 @@ import org.zenfile.model.storage.param.StorageParam;
 import org.zenfile.utils.CodeMsg;
 
 import java.io.FileNotFoundException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Getter
 public abstract class AbstractBaseFileService<P extends StorageParam> implements BaseFileService {
 
+
+    /**
+     * 对响应的AbstractBaseFileService的缓存
+     */
+    private static final Map<Class<? extends AbstractBaseFileService>, List<String>> STORAGE_SOURCE_PARAM_CACHE = new ConcurrentHashMap<>();
 
     /**
      * 存储源配置
@@ -117,4 +129,25 @@ public abstract class AbstractBaseFileService<P extends StorageParam> implements
      * 获取存储源的存储信息，主要为以使用大小，以及存储源大小
      */
     public abstract List<Long> getSourceStorageInfo();
+
+    /**
+     * 获取当前存储元需要的所有参数，继承在StorageParam
+     * @return 所有的参数名称
+     */
+    public List<String> getStorageSourceParamList(){
+        Class<? extends AbstractBaseFileService> thisClass = this.getClass();
+        if(STORAGE_SOURCE_PARAM_CACHE.containsKey(thisClass)){
+            return STORAGE_SOURCE_PARAM_CACHE.get(thisClass);
+        }
+
+        ArrayList<String> paramList = new ArrayList<>();
+        // 获取泛型中参数的类型
+        Class<?> beanClass = ResolvableType.forClass(thisClass).getSuperType().getGeneric(0).resolve();
+        // 获取所有参数中的属性
+        Field[] fields = ReflectUtil.getFieldsDirectly(beanClass, true);
+        Arrays.stream(fields).forEach(field -> paramList.add(field.getName()));
+        // 添加到缓存当中
+        STORAGE_SOURCE_PARAM_CACHE.put(thisClass, paramList);
+        return paramList;
+    }
 }

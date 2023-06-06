@@ -15,4 +15,8 @@ public interface StorageSourceMapper {
     List<StorageSource> getAllStorageSource();
 
     StorageSource getStorageSourceByKey(@Param("key") String key);
+
+    void insertStorageSource(@Param("source") StorageSource storageSource);
+
+    void updateStorageSourceById(@Param("source") StorageSource storageSource);
 }

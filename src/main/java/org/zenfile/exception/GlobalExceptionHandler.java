@@ -62,8 +62,21 @@ public class GlobalExceptionHandler {
      * 非法的Key异常处理
      */
     @ExceptionHandler(InvalidStorageSourceKeyException.class)
+    @ResponseStatus
+    @ResponseBody
     public ResultJson<String> invalidStorageSourceKey(InvalidStorageSourceKeyException exception){
         log.error("存储源Key异常：{}", exception.getMessage());
+        return ResultJson.getError(exception.getCodeMsgMessage());
+    }
+
+    /**
+     * 未知操作异常处理
+     */
+    @ExceptionHandler(UnKnownOperationException.class)
+    @ResponseStatus
+    @ResponseBody
+    public ResultJson<String> unKnowOperationException(UnKnownOperationException exception){
+        log.error("未知异常操作");
         return ResultJson.getError(exception.getCodeMsgMessage());
     }
 }

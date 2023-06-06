@@ -13,6 +13,7 @@ import org.zenfile.model.storage.entity.StorageSource;
 import org.zenfile.model.storage.entity.StorageSourceConfig;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -164,5 +165,30 @@ public class RedisStorageUtils {
      */
     public Long getStorageSourceIdByKey(String storageKey) {
         return (Long) redisTemplate.opsForValue().get(storageKey);
+    }
+
+    /**
+     * 删除存储源缓存，包括存储源配置缓存，通过Id，以及key
+     */
+    public void delStorageSourceById(StorageSource storageSource) {
+        ArrayList<String> keys = new ArrayList<>();
+        keys.add(StrUtil.format("{}:{}", STORAGE_SOURCE, storageSource.getId()));
+        keys.add(StrUtil.format("{}:{}",STORAGE_SOURCE_CONFIG, storageSource.getId()));
+        redisTemplate.delete(keys);
+    }
+
+    /**
+     * 删除Key到存储源Id的映射
+     * @param key 以来的Key
+     */
+    public void delStorageSourceKeyToId(String key) {
+        redisTemplate.delete(StrUtil.format("{}:{}", STORAGE_SOURCE_KEY, key));
+    }
+
+    /**
+     * 根据Id删除给定的存储源配置
+     */
+    public void delStorageSourceConfigById(Long id) {
+        redisTemplate.delete(StrUtil.format("{}:{}",STORAGE_SOURCE_CONFIG,id));
     }
 }

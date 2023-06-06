@@ -1,9 +1,12 @@
 package org.zenfile.service.storage;
 
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zenfile.convert.StorageSourceConvert;
+import org.zenfile.exception.UnKnownOperationException;
 import org.zenfile.exception.storageSource.InvalidStorageSourceKeyException;
 import org.zenfile.mapper.StorageSourceMapper;
 import org.zenfile.model.storage.dto.StorageSourceAllParamDto;
@@ -11,10 +14,12 @@ import org.zenfile.model.storage.dto.StorageSourceDto;
 import org.zenfile.model.storage.entity.StorageSource;
 import org.zenfile.model.storage.entity.StorageSourceConfig;
 import org.zenfile.model.storage.enums.StorageTypeEnum;
+import org.zenfile.model.storage.request.StorageSourceRequest;
 import org.zenfile.utils.CodeMsg;
 import org.zenfile.utils.RedisStorageUtils;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,6 +40,7 @@ public class StorageSourceService {
 
     @Resource
     StorageSourceConvert storageSourceConvert;
+
 
     /**
      * 根据存储Id获取存储源Key
@@ -110,7 +116,9 @@ public class StorageSourceService {
      */
     public StorageSourceDto getStorageItemByKey(String storageKey) {
         Long storageID = getStorageIdByKey(storageKey);
+        log.debug("根据存储源Key，获取到存储源Id为{}", storageID);
         StorageSource storageSource = getStorageSourceById(storageID);
+        log.debug("根据存储源Id{}", storageSource);
         List<StorageSourceConfig> configList = storageSourceConfigService.getStorageSourceConfigByStorageId(storageID);
         StorageSourceAllParamDto storageSourceAllParamDto = new StorageSourceAllParamDto();
         configList.forEach(storageSourceConfigService ->{
@@ -128,5 +136,65 @@ public class StorageSourceService {
         if(storageId != null) return true;
         StorageSource storageSource = storageSourceMapper.getStorageSourceByKey(storageKey);
         return storageSource != null;
+    }
+
+    /**
+     * 更改或者更新存储源
+     */
+    @Transactional
+    public StorageSource saveStorageSource(StorageSourceRequest request) {
+        log.info("保存或修改存储源Key：{}, newKey: {}, name：{}, type：{}", request.getKey(), request.getNewKey(), request.getName()
+                            , request.getType());
+        StorageSource storageSource = storageSourceConvert.storageSourceRequestToStorageSource(request);
+        if(request.getKey() == null && request.getNewKey() == null){
+            throw new UnKnownOperationException(CodeMsg.UNKNOWN_OPERATION);
+        }
+        // key不为空，为更新存储源
+        if(request.getKey() != null){
+            Boolean isExist = existKey(storageSource.getKey());
+            if (!isExist) {
+                // 存在不存在这个Key，但是为更新这个存储源，抛出异常
+                String message = StrUtil.format("所执行的操作是更新存储源，但是{}（key）不存在。", request.getKey());
+                throw new InvalidStorageSourceKeyException(CodeMsg.KEY_UPDATE_CONFLICT, null, message);
+            }
+            // 有对应的Key，获取对应的Id
+            Long storageIdByKey = getStorageIdByKey(storageSource.getKey());
+            storageSource.setId(storageIdByKey);
+        }
+        // 更新操作的时候newKey可能为空，对于插入操作，不可能为空
+        if(request.getNewKey() != null){
+            storageSource.setKey(request.getNewKey());
+        }
+        log.debug("修改或更新StorageSource {}", storageSource);
+        storageSource = insertOrUpdateStorageSource(storageSource);
+        // 删除Redis中key到Id的映射
+        redisStorageUtils.delStorageSourceKeyToId(request.getKey());
+        List<StorageSourceConfig> configList = storageSourceConfigService.toStroageSourceConfigList(storageSource, request);
+        storageSourceConfigService.batchSaveConfig(storageSource, configList);
+        redisStorageUtils.delStorageSourceConfigById(storageSource.getId());
+
+        log.info("保存存储源参数成功，存储源：id：{}， name：{}, config size: {}", storageSource.getId(),
+                storageSource.getName(), configList.size());
+        return storageSource;
+    }
+
+    /**
+     * 根据StorageSource来决定是否新增存储源或者更新存储元
+     * @param storageSource 存储源
+     */
+    @Transactional
+    public StorageSource insertOrUpdateStorageSource(StorageSource storageSource){
+        if(storageSource.getId() == null){
+            storageSource.setCreateTime(new Date());
+            // TODO 没有实现用户功能
+            storageSource.setCreateUser(1L);
+            // 新增存储源
+            storageSourceMapper.insertStorageSource(storageSource);
+        }else{
+            // 已存在存储源，需要清除Redis对存储源的缓存
+            storageSourceMapper.updateStorageSourceById(storageSource);
+            redisStorageUtils.delStorageSourceById(storageSource);
+        }
+        return storageSource;
     }
 }

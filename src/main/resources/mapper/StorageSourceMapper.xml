@@ -25,4 +25,16 @@
         select *
         from `storage_source` where `key` = #{key};
     </select>
+
+    <insert id="insertStorageSource" parameterType="org.zenfile.model.storage.entity.StorageSource" useGeneratedKeys="true" keyProperty="id">
+        insert into `storage_source` (`key`, `name`, `type`, `create_time`, `create_user`)
+        values (#{source.key}, #{source.name}, #{source.type}, #{source.createTime}, #{source.createUser});
+    </insert>
+
+    <update id="updateStorageSourceById" parameterType="org.zenfile.model.storage.entity.StorageSource">
+        update `storage_source`
+        set `name` = #{source.name}, `key` = #{source.key}, `type` = #{source.type}
+        where `id` = #{source.id};
+    </update>
+
 </mapper>

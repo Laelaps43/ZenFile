@@ -23,11 +23,9 @@ import org.zenfile.utils.CodeMsg;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -115,10 +113,7 @@ public class StorageSourceContext implements ApplicationContextAware {
         // 获取AbstractBaseFileService类的实际实现类，一般是在impl文件下的类
         Class<?> targetClass = AopUtils.getTargetClass(fileService);
         log.debug("targetClass是{}", targetClass);
-        // 获取targetClass的实际参数类型Class
-//        Class<?> beanClass = ResolvableType.forClass(targetClass).getGeneric(0).asMap().resolve();
         ResolvableType resolvableType = ResolvableType.forClass(targetClass).getSuperType();
-        log.debug("toMap{}", resolvableType.asMap());
         Class<?> beanClass = resolvableType.getGeneric(0).resolve();
         log.debug("获取{}的泛型参数类型为{}", targetClass.getName(), beanClass);
 
@@ -208,5 +203,18 @@ public class StorageSourceContext implements ApplicationContextAware {
             throw new InvalidStorageSourceException(storageId);
         }
         return fileService;
+    }
+
+    /**
+     * 根据存储类型来获取所有的存储参数名称
+     * @param typeEnum 对应的存储类型
+     * @return 存储参数名称列
+     */
+    public static List<String> getStorageSourceParamListByType(StorageTypeEnum typeEnum){
+        return storageSourceFileServiceMap.values().stream()
+                .filter(fileService -> fileService.getStorageTypeEnum() == typeEnum)
+                .findFirst()
+                .map((Function<? super AbstractBaseFileService, List<String>>) AbstractBaseFileService::getStorageSourceParamList)
+                .orElse(Collections.emptyList());
     }
 }
