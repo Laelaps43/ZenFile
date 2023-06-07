@@ -4,12 +4,17 @@ import cn.hutool.core.util.ReflectUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ResolvableType;
+import org.zenfile.exception.file.SaveFileToDateBaseException;
 import org.zenfile.exception.storageSource.InitializeStorageSourceException;
 import org.zenfile.model.file.dto.FileItemResult;
 import org.zenfile.model.file.entity.FileItem;
+import org.zenfile.model.file.enums.FileTypeEnum;
 import org.zenfile.model.storage.param.StorageParam;
+import org.zenfile.service.file.FileService;
 import org.zenfile.utils.CodeMsg;
+import org.zenfile.utils.StringUtils;
 
+import javax.annotation.Resource;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -22,6 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 public abstract class AbstractBaseFileService<P extends StorageParam> implements BaseFileService {
 
+
+    @Resource
+    FileService fileService;
 
     /**
      * 对响应的AbstractBaseFileService的缓存
@@ -149,5 +157,27 @@ public abstract class AbstractBaseFileService<P extends StorageParam> implements
         // 添加到缓存当中
         STORAGE_SOURCE_PARAM_CACHE.put(thisClass, paramList);
         return paramList;
+    }
+
+    /**
+     * 将给定文件夹下所有的文件保存到数据库中
+     */
+    protected void saveFileToDataBase(String path) throws Exception {
+        log.debug("保存{}下的数据",path);
+        // 从指定路径上获取文件
+        List<FileItem> fileItems = listFileItemByStorage(path);
+        fileItems.forEach(fileItem -> {
+            if(!fileService.isExistFile(fileItem)){
+                if (fileItem.getType() == FileTypeEnum.FOLDER){
+                    try {
+                        log.debug("{}是一个文件夹，需要遍历。", fileItem.getName());
+                        saveFileToDataBase(StringUtils.concat(fileItem.getPath(),fileItem.getName()));
+                    } catch (Exception e) {
+                        throw new SaveFileToDateBaseException(fileItem.getPath(), fileItem.getName(), "遍历失败");
+                    }
+                }
+                fileService.insertFileItemToDataBase(fileItem);
+            }
+        });
     }
 }

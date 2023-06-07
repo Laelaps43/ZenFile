@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.zenfile.exception.file.SaveFileToDateBaseException;
 import org.zenfile.exception.storageSource.*;
 import org.zenfile.model.ResultJson;
 
@@ -78,5 +79,13 @@ public class GlobalExceptionHandler {
     public ResultJson<String> unKnowOperationException(UnKnownOperationException exception){
         log.error("未知异常操作");
         return ResultJson.getError(exception.getCodeMsgMessage());
+    }
+
+    /**
+     * 处理保存到数据库异常
+     */
+    @ExceptionHandler(SaveFileToDateBaseException.class)
+    public void saveFileTODataBaseException(SaveFileToDateBaseException exception){
+        log.error("保存到数据库异常：文件{}/{}；异常消息：{}", exception.getName(), exception.getPath(),exception.getMessage());
     }
 }

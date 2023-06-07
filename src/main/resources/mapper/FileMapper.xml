@@ -20,4 +20,15 @@
         on f.`id` = s.`file_id`
         WHERE s.`storage_id` = #{id} and f.`path`= #{path} and f.`name` = #{name}
     </select>
+
+    <insert id="insertFileItem" parameterType="org.zenfile.model.file.entity.FileItem" useGeneratedKeys="true" keyProperty="id">
+        insert into `file` (`name`, `path`, `type`, `size`, `create_time`)
+        values (#{file.name}, #{file.path}, #{file.type}, #{file.size}, #{file.createTime});
+    </insert>
+
+    <insert id="insertFileItemStorageId" parameterType="org.zenfile.model.file.entity.FileItem">
+        insert into `file_storage_source` (`file_id`, `storage_id`)
+        values (#{file.id}, #{file.storageId});
+    </insert>
+
 </mapper>

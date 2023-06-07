@@ -2,13 +2,13 @@ package org.zenfile.service.file;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.zenfile.mapper.FileMapper;
 import org.zenfile.model.file.entity.FileItem;
 import org.zenfile.utils.RedisStorageUtils;
 import org.zenfile.utils.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -39,5 +39,23 @@ public class FileService {
         }
         log.debug("{}的对象为{}", pathAndName, fileItem);
         return fileItem;
+    }
+
+
+    /**
+     * 向数据库中插入数据，因为是新插入的数据，
+     * 所有要先获取到插入文件的主键，在去插入另外一张表。
+     */
+    @Transactional
+    public void insertFileItemToDataBase(FileItem fileItem) {
+        fileMapper.insertFileItem(fileItem);
+        fileMapper.insertFileItemStorageId(fileItem);
+    }
+
+    /**
+     * 判断给定文件是否存在，存在返回True，不存在返回False
+     */
+    public boolean isExistFile(FileItem fileItem) {
+        return fileMapper.getFileItemStorage(fileItem.getPath(), fileItem.getName(), fileItem.getStorageId()) != null;
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.zenfile.convert.FileConvert;
+import org.zenfile.exception.file.SaveFileToDateBaseException;
 import org.zenfile.exception.storageSource.DuplicateDriverException;
 import org.zenfile.exception.storageSource.InitializeStorageSourceException;
 import org.zenfile.model.file.dto.FileItemResult;
@@ -55,7 +56,13 @@ public class BaseLocalServiceImpl extends AbstractProxyTransferService<LocalPara
         }
 
         // TODO 保存到数据库
+        try {
+            saveFileToDataBase("/");
+        } catch (Exception e) {
+            throw new SaveFileToDateBaseException("保存到数据库失败");
+        }
         log.info("存储源{}, 初始化成功!", getStorageId());
+
     }
 
 
@@ -186,9 +193,6 @@ public class BaseLocalServiceImpl extends AbstractProxyTransferService<LocalPara
         fileItem.setCreateTime(new Date(item.lastModified()));
         fileItem.setSize(item.isDirectory() ? null : item.length());
         fileItem.setType(item.isDirectory() ? FileTypeEnum.FOLDER : FileTypeEnum.FILE);
-        // TODO 用户信息未实现
-        fileItem.setHoldId(1L);
-        fileItem.setCrateUserId(1L);
         return fileItem;
     }
 

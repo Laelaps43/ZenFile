@@ -20,22 +20,22 @@ public class ServiceException extends RuntimeException{
         this.codeMsg = codeMsg;
     }
 
-    public ServiceException(String message, CodeMsg codeMsg) {
+    public ServiceException( CodeMsg codeMsg, String message) {
         super(message);
         this.codeMsg = codeMsg;
     }
 
-    public ServiceException(String message, Throwable cause, CodeMsg codeMsg) {
+    public ServiceException(CodeMsg codeMsg,  Throwable cause, String message) {
         super(message, cause);
         this.codeMsg = codeMsg;
     }
 
-    public ServiceException(Throwable cause, CodeMsg codeMsg) {
+    public ServiceException(CodeMsg codeMsg, Throwable cause) {
         super(cause);
         this.codeMsg = codeMsg;
     }
 
-    public ServiceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, CodeMsg codeMsg) {
+    public ServiceException(CodeMsg codeMsg, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.codeMsg = codeMsg;
     }
