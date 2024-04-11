@@ -11,16 +11,34 @@ import java.util.Date;
 @Data
 public class StorageSource {
 
+    /**
+     * 主键
+     */
     private Long id;
 
+    /**
+     * 存储名称
+     */
     private String name;
 
+    /**
+     * 存储源名称
+     */
     private String key;
 
+    /**
+     * 存储源类型
+     */
     private StorageTypeEnum type;
 
+    /**
+     * 创建时间
+     */
     private Date createTime;
 
+    /**
+     * 创建userId
+     */
     private Long createUser;
 
 }
