@@ -30,6 +30,4 @@ public class StorageSourceDto {
     @ApiModelProperty(value = "存储源驱动")
     private String driver;
 
-    @ApiModelProperty(value = "存储源已用大小", example = "20")
-    private Long used;
 }
